@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    environment {
+        DEPLOY_DIR = 'D:\\deploy-pruebas\\app'
+        ARTIFACT   = 'target\\automatizacion-examen-1.0.0.jar'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Unit Tests') {
+            steps {
+                echo 'Compilando proyecto y ejecutando pruebas UNITARIAS...'
+                bat 'mvn -B clean test package'
+            }
+        }
+
+        stage('Integration / Acceptance Tests') {
+            steps {
+                echo 'Ejecutando pruebas de INTEGRACIÓN / ACCEPTANCE (Failsafe)...'
+                bat 'mvn -B failsafe:integration-test failsafe:verify'
+            }
+        }
+
+        stage('Deploy to Test Environment') {
+            steps {
+                echo "Desplegando artefacto en ambiente de prueba: ${env.DEPLOY_DIR}"
+                bat """
+IF NOT EXIST "%DEPLOY_DIR%" (
+  mkdir "%DEPLOY_DIR%"
+)
+
+IF EXIST "%DEPLOY_DIR%\\app.jar" (
+  echo Haciendo backup de version previa...
+  copy /Y "%DEPLOY_DIR%\\app.jar" "%DEPLOY_DIR%\\app-prev.jar"
+)
+
+echo Copiando nueva version al ambiente de prueba...
+copy /Y "%ARTIFACT%" "%DEPLOY_DIR%\\app.jar"
+"""
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline de despliegue completada correctamente. Ambiente de prueba actualizado.'
+        }
+        failure {
+            echo 'Pipeline falló. Ejecutando ROLLBACK...'
+            bat """
+IF EXIST "%DEPLOY_DIR%\\app-prev.jar" (
+  echo Restaurando version anterior desde app-prev.jar...
+  copy /Y "%DEPLOY_DIR%\\app-prev.jar" "%DEPLOY_DIR%\\app.jar"
+) ELSE (
+  echo No existe version previa para rollback.
+)
+"""
+        }
+    }
+}
