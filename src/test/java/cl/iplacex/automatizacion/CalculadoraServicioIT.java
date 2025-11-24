@@ -12,6 +12,6 @@ public class CalculadoraServicioIT {
         int parcial = svc.sumar(10, 15);              // 25
         int total = svc.sumarTres(parcial, 5, 10);    // 25 + 5 + 10 = 40
 
-        Assertions.assertEquals(41, total, "El flujo completo de suma debe dar 40");
+        Assertions.assertEquals(40, total, "El flujo completo de suma debe dar 40");
     }
 }
