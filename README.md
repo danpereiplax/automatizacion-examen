@@ -22,7 +22,7 @@ El repositorio contiene la estructura estándar Maven y un primer test automatiz
 
 La estrategia aplicada en este proyecto se centra en:
 
-### ✔ Pruebas unitarias (JUnit 5)
+### Pruebas unitarias (JUnit 5)
 - Validación de lógica simple en Java.  
 - Ejecución rápida y en cada cambio (ideal para integración continua).  
 - Se configuran en la carpeta estándar:  
